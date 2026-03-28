@@ -1,0 +1,41 @@
+name: Autonomous Shift Sync Pipeline
+
+on:
+  schedule:
+    # Executes at the top of every hour (UTC)
+    - cron: '0 * * * *'
+  workflow_dispatch:
+    # Allows manual triggering via the GitHub Actions UI for testing
+
+jobs:
+  sync-and-forecast:
+    name: Run Automation Engine
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.11 Environment
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip' # Speeds up execution by caching dependencies
+
+      - name: Install Dependencies & Headless Browser
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          python -m playwright install chromium
+
+      - name: Inject Secure Google Credentials
+        # Securely mounts the OAuth tokens from GitHub Secrets into the runner
+        run: |
+          echo '${{ secrets.GOOGLE_CREDENTIALS }}' > credentials.json
+          echo '${{ secrets.GOOGLE_TOKEN }}' > token.json
+
+      - name: Execute B2B Automator Script
+        env:
+          GF_USERNAME: ${{ secrets.GF_USER }}
+          GF_PASSWORD: ${{ secrets.GF_PASS }}
+        run: python automator.py
