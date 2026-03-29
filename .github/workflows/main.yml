@@ -1,6 +1,8 @@
 name: Autonomous Shift Sync Pipeline
 
-on:
+# Uncomment the section below in order to get your workflow working.
+
+# on:
   schedule:
     # Executes at the top of every hour (UTC)
     - cron: '0 * * * *'
